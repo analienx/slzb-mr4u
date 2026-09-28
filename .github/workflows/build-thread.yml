@@ -1,0 +1,59 @@
+name: Build MR4U MG26 Thread firmware
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "firmware/**"
+      - ".github/workflows/build-thread.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/nerivec/silabs-firmware-builder:f68edd51e13d91df
+      options: --user root
+
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          path: mr4u
+
+      - name: Checkout upstream firmware builder
+        uses: actions/checkout@v4
+        with:
+          repository: Nerivec/silabs-firmware-builder
+          ref: sisdk-2026.6.x
+          path: builder
+
+      - name: Install MR4U custom manifest
+        run: |
+          cp mr4u/firmware/smlight_slzbmr4u_openthread_rcp_usb115200.yaml \
+            builder/manifests/smlight/smlight_slzbmr4u_openthread_rcp_usb115200.yaml
+
+      - name: Build OpenThread RCP
+        working-directory: builder
+        run: |
+          export HOME=/root
+          /opt/venv/bin/python3 tools/build_project.py \
+            --manifest manifests/smlight/smlight_slzbmr4u_openthread_rcp_usb115200.yaml \
+            --build-dir build \
+            --output-dir outputs \
+            --output gbl \
+            --output hex \
+            --output out \
+            --repo-owner analienx \
+            --repo-hash "${GITHUB_SHA::8}"
+          sha256sum outputs/*
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mr4u-mg26-openthread-rcp-usb115200
+          path: builder/outputs/*
+          if-no-files-found: error
+          retention-days: 30
