@@ -1,0 +1,35 @@
+name: Prepare MR4U core recovery artifact
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download official stable U/MRxU core image
+        run: |
+          mkdir -p recovery-artifact
+          curl -fL --retry 3 \
+            -o recovery-artifact/slzb-os-u-v3.3.1-full.bin \
+            https://updates.smlight.tech/firmware/slzb06x/core/slzb-os-u-v3.3.1-full.bin
+          sha256sum recovery-artifact/slzb-os-u-v3.3.1-full.bin | tee recovery-artifact/SHA256SUMS
+
+      - name: Record provenance
+        run: |
+          cat > recovery-artifact/PROVENANCE.txt <<'EOF'
+          Device family: SMLIGHT SLZB-06U / MRxU
+          Firmware: SLZB-OS v3.3.1 full
+          Source: https://updates.smlight.tech/firmware/slzb06x/core/slzb-os-u-v3.3.1-full.bin
+          Purpose: emergency/recovery only; take a full ESP32 flash backup before writing.
+          EOF
+
+      - name: Upload recovery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slzb-mr4u-core-recovery-v3.3.1
+          path: recovery-artifact/*
+          retention-days: 30
