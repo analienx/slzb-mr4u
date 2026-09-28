@@ -60,7 +60,9 @@ The workflow only produces firmware artifacts. **It does not flash Home Assistan
 - MG26: converted away from its former diagnostic Ember/Zigbee role toward Thread.
 - HA OpenThread Border Router: installed/configured, but kept stopped until the MG26 serial/runtime path is validated.
 - Target OTBR USB settings: MG26 on `if00`, 460800 baud, host hardware flow control off.
-- Diagnostic milestone: produce and validate the 115200/no-flow recovery image, identify the MR4U-specific MG26 bootloader/reset path, then verify Spinel communication before starting OTBR.
+- Diagnostic 115200/no-flow recovery image: **built successfully** via GitHub Actions.
+- Recovery GBL SHA256: `40be3cef5336c18e992a0df45595e8e51d763daa3db3c555b8d8e701dc5c8c47`.
+- Next milestone: identify the MR4U-specific MG26 bootloader/reset path, flash only `if00` if needed, then verify Spinel communication before starting OTBR.
 
 ## Upstream references
 
