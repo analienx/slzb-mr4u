@@ -47,7 +47,7 @@ jobs:
             --output hex \
             --output out \
             --repo-owner analienx \
-            --repo-hash "${GITHUB_SHA::8}"
+            --repo-hash "$(printf %.8s \"$GITHUB_SHA\")"
           sha256sum outputs/*
 
       - name: Upload firmware artifacts
