@@ -26,9 +26,9 @@ MR4U is connected to Home Assistant by USB. In this installation the Ethernet co
 
 ## Current Thread work
 
-The vendor/upstream MR4U OpenThread build uses **460800 baud + RTS/CTS hardware flow control**. The current MR4U USB bridge path was operating with the radio side at **115200**, so this repository carries a dedicated MR4U OpenThread RCP build variant intended to match the existing USB path rather than modifying the production P10 radio.
+The upstream MR4U OpenThread radio image is built for a 460800-baud radio link with RTS/CTS between the ESP32 bridge and MG26. **Home Assistant OTBR over USB must still be configured with host-side hardware flow control disabled and baud rate 460800**, matching SMLIGHT's official USB Thread instructions.
 
-The custom variant keeps the MR4U MG26 pin mapping but uses:
+The current live blocker is that MG26 was flashed to the upstream Thread image, but the existing USB bridge path did not successfully reach the radio at runtime. This repository therefore also carries a **diagnostic/recovery** MR4U OpenThread build variant that keeps the MR4U MG26 pin mapping while using:
 
 - OpenThread RCP
 - EFR32MG26B420F3200IM48
@@ -36,6 +36,8 @@ The custom variant keeps the MR4U MG26 pin mapping but uses:
 - no UART flow control
 - EUSART0
 - MR4U TX/RX mapping: PA5 / PA6
+
+This 115200 variant is not the preferred final configuration; it exists to test/recover the USB bridge path without modifying the production P10 radio.
 
 ## Build
 
@@ -57,7 +59,8 @@ The workflow only produces firmware artifacts. **It does not flash Home Assistan
 - Production Zigbee on P10: preserved and operational.
 - MG26: converted away from its former diagnostic Ember/Zigbee role toward Thread.
 - HA OpenThread Border Router: installed/configured, but kept stopped until the MG26 serial/runtime path is validated.
-- Next milestone: produce and validate the 115200/no-flow MR4U OpenThread RCP image, then recover/flash MG26 through a radio-specific path and verify Spinel communication before starting OTBR.
+- Target OTBR USB settings: MG26 on `if00`, 460800 baud, host hardware flow control off.
+- Diagnostic milestone: produce and validate the 115200/no-flow recovery image, identify the MR4U-specific MG26 bootloader/reset path, then verify Spinel communication before starting OTBR.
 
 ## Upstream references
 
